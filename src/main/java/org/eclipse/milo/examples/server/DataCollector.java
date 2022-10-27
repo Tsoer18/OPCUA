@@ -1,12 +1,18 @@
 package org.eclipse.milo.examples.server;
 
-import org.json.*;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
+import org.json.simple.JSONArray;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Iterator;
+
 public class DataCollector {
     private static final String USER_AGENT = "Mozilla/5.0";
 
@@ -16,14 +22,14 @@ public class DataCollector {
 
     private static final String POST_PARAMS = "userName=Pankaj";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
 
         sendGET();
         System.out.println("GET DONE");
 
     }
 
-    private static void sendGET() throws IOException {
+    private static void sendGET() throws IOException, ParseException {
         URL obj = new URL(GET_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
@@ -39,17 +45,27 @@ public class DataCollector {
 
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
-
-
-
-                String[] splitter = inputLine.split("\"id\"");
-                for (String x : splitter){
-                    System.out.println(x.indexOf("\"id\""));
-                    System.out.println("\n");
-                }
-
             }
             in.close();
+
+            JSONParser parser = new JSONParser();
+
+            Object object = parser.parse(response.toString());
+            JSONArray jo = (JSONArray) object;
+            JSONObject jsonObject = (JSONObject) jo.get(0);
+            System.out.println(jsonObject.get("name"));
+
+
+
+
+            //System.out.println(array.get(0));
+
+
+
+
+
+
+
 
             // print result
             System.out.println(response.toString());
