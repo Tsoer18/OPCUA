@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class DataCollector {
     private static final String USER_AGENT = "Mozilla/5.0";
@@ -41,10 +40,20 @@ public class DataCollector {
         for (Object i : m){
             System.out.println(i.toString());
         }
-        URL final1 = new URL(GET_URL+"/"+list.get(0)+"/ldev/"+m.get(1)+"/data");
-        StringBuffer finalresponse = sendGET(final1);
+        URL almostFinal = new URL(GET_URL+"/"+list.get(1)+"/ldev/"+m.get(0)+"/data");
+        System.out.println(almostFinal.toString());
+        StringBuffer finalresponse = sendGET(almostFinal);
         ArrayList nodeKeys = getNodes(finalresponse);
-        System.out.println(nodeKeys);
+        for(Object key : nodeKeys) {
+            System.out.println(key.toString());
+        }
+        URL final1 = new URL(GET_URL+"/"+list.get(1)+"/ldev/"+m.get(0)+"/data/onoff");
+        StringBuffer datapoints = sendGET(final1);
+        ArrayList datapoints1 = getDatapoints(datapoints);
+        for(Object x : datapoints1){
+            System.out.println(x.toString());
+        }
+
 
 
 
@@ -80,6 +89,20 @@ public class DataCollector {
 
 
 
+    }
+
+    public static ArrayList getDatapoints(StringBuffer response) throws  ParseException{
+        JSONParser parser = new JSONParser();
+        ArrayList list = new ArrayList();
+        Object object = parser.parse(response.toString());
+        JSONArray jo = (JSONArray) object;
+        for (int i = 0; i<jo.size(); i++){
+            JSONObject jsonObject = (JSONObject) jo.get(i);
+            String x = (jsonObject).get("key").toString();
+            list.add(x);
+        }
+
+        return list;
     }
     public static ArrayList getNodes(StringBuffer response) throws  ParseException{
         JSONParser parser = new JSONParser();
