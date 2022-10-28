@@ -49,14 +49,28 @@ public class DataCollector {
             }
             in.close();
 
-            JSONParser parser = new JSONParser();
+            ArrayList list = getId(response);
+            System.out.println(list);
 
 
-            ArrayList list = new ArrayList();
 
-            for (int i = 0; i < 5; i++){
+        } else {
+            System.out.println("GET request not worked");
+        }
+
+
+    }
+
+    public static ArrayList getId(StringBuffer response) throws ParseException {
+        JSONParser parser = new JSONParser();
+
+
+        ArrayList list = new ArrayList();
+
             Object object = parser.parse(response.toString());
             JSONArray jo = (JSONArray) object;
+
+            for (int i = 0; i < jo.size(); i++){
             JSONObject jsonObject = (JSONObject) jo.get(i);
 
             String id = (jsonObject.get("id")).toString();
@@ -65,13 +79,9 @@ public class DataCollector {
             //System.out.println(jsonObject.get("id"));
             // print result
             //System.out.println(response.toString());
-            }
-            System.out.println(list);
-        } else {
-            System.out.println("GET request not worked");
         }
-
-
+        return list;
+        //System.out.println(list);
     }
 
     private static void sendPOST() throws IOException {
