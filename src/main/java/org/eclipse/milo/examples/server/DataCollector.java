@@ -25,46 +25,91 @@ public class DataCollector {
 
     public static void main(String[] args) throws IOException, ParseException {
 
-        sendGET();
-        System.out.println("GET DONE");
+        URL obj = new URL(GET_URL);
+        StringBuffer response = sendGET(obj);
+        ArrayList list = getId(response);
+        for (Object i : list){
+            System.out.println(i.toString());
+        }
+        ArrayList<URL> deviceURLs = new ArrayList();
+        for (int i = 0; i<list.size(); i++){
+            URL test = new URL (GET_URL +"/"+ list.get(i)+ "/ldev");
+            deviceURLs.add(test);
+        }
+        StringBuffer test1= sendGET(deviceURLs.get(1));
+        ArrayList m = getLogicalDevices(test1);
+        for (Object i : m){
+            System.out.println(i.toString());
+        }
+        URL final1 = new URL(GET_URL+"/"+list.get(0)+"/ldev/"+m.get(1)+"/data");
+        StringBuffer finalresponse = sendGET(final1);
+        ArrayList nodeKeys = getNodes(finalresponse);
+        System.out.println(nodeKeys);
+
+
+
+
 
     }
 
-    private static void sendGET() throws IOException, ParseException {
-        URL obj = new URL(GET_URL);
+    private static StringBuffer sendGET(URL obj) throws IOException, ParseException {
+
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", USER_AGENT);
         int responseCode = con.getResponseCode();
         System.out.println("GET Response Code :: " + responseCode);
+        StringBuffer response = new StringBuffer();
 
         if (responseCode == HttpURLConnection.HTTP_OK) { // success
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
             String inputLine;
-            StringBuffer response = new StringBuffer();
+
 
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
             in.close();
-
-            ArrayList list = getId(response);
-            System.out.println(list);
-
-
-
+            return response;
         } else {
             System.out.println("GET request not worked");
+            return response;
+
         }
 
+
+
+    }
+    public static ArrayList getNodes(StringBuffer response) throws  ParseException{
+        JSONParser parser = new JSONParser();
+        ArrayList list = new ArrayList();
+        Object object = parser.parse(response.toString());
+        JSONArray jo = (JSONArray) object;
+        for (int i = 0; i<jo.size(); i++){
+            JSONObject jsonObject = (JSONObject) jo.get(i);
+            String x = (jsonObject).get("key").toString();
+            list.add(x);
+        }
+
+        return list;
+    }
+    public static ArrayList getLogicalDevices (StringBuffer response) throws ParseException{
+        JSONParser parser = new JSONParser();
+        ArrayList list = new ArrayList();
+        Object object = parser.parse (response.toString());
+        JSONArray jo = (JSONArray) object;
+        for (int i = 0; i<jo.size();i++){
+            JSONObject jsonObject = (JSONObject) jo.get(i);
+            String key = (jsonObject).get("key").toString();
+            list.add(key);
+        }
+        return list;
 
     }
 
     public static ArrayList getId(StringBuffer response) throws ParseException {
         JSONParser parser = new JSONParser();
-
-
         ArrayList list = new ArrayList();
 
             Object object = parser.parse(response.toString());
