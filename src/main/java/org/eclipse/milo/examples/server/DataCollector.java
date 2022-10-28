@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class DataCollector {
@@ -50,25 +51,22 @@ public class DataCollector {
 
             JSONParser parser = new JSONParser();
 
+
+            ArrayList list = new ArrayList();
+
+            for (int i = 0; i < 5; i++){
             Object object = parser.parse(response.toString());
             JSONArray jo = (JSONArray) object;
-            JSONObject jsonObject = (JSONObject) jo.get(0);
-            System.out.println(jsonObject.get("name"));
+            JSONObject jsonObject = (JSONObject) jo.get(i);
 
+            String id = (jsonObject.get("id")).toString();
+            list.add(id);
 
-
-
-            //System.out.println(array.get(0));
-
-
-
-
-
-
-
-
+            //System.out.println(jsonObject.get("id"));
             // print result
-            System.out.println(response.toString());
+            //System.out.println(response.toString());
+            }
+            System.out.println(list);
         } else {
             System.out.println("GET request not worked");
         }
