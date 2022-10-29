@@ -10,6 +10,8 @@
 
 package org.eclipse.milo.examples.server;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -38,6 +40,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +49,7 @@ import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.
 import static org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.ushort;
 
 public class Namespace extends ManagedNamespaceWithLifecycle {
+    DataCollector dataCollector = new DataCollector();
 
     public static final String NAMESPACE_URI = "urn:sdu:milo:ICPS";
 
@@ -61,7 +65,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
     private final SubscriptionModel subscriptionModel;
 
-    Namespace(OpcUaServer server) {
+    Namespace(OpcUaServer server) throws IOException, ParseException {
         super(server, NAMESPACE_URI);
 
         subscriptionModel = new SubscriptionModel(server, this);
@@ -76,6 +80,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
             @Override
             public void startup() {
                 startBogusEventNotifier();
+
             }
 
             @Override
@@ -93,13 +98,13 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
     private void createAndAddNodes() {
         // Create a "HelloWorld" folder and add it to the node manager
-        NodeId folderNodeId = newNodeId("ICPS");
+        NodeId folderNodeId = newNodeId("Devices");
 
         UaFolderNode folderNode = new UaFolderNode(
             getNodeContext(),
             folderNodeId,
-            newQualifiedName("ICPS"),
-            LocalizedText.english("ICPS")
+            newQualifiedName("Devices"),
+            LocalizedText.english("Devices")
         );
 
         getNodeManager().addNode(folderNode);
@@ -113,7 +118,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
         ));
 
         // Add the rest of the nodes
-        addVariableNodes(folderNode);
+        addDevices(folderNode);
     }
 
     private void startBogusEventNotifier() {
@@ -167,10 +172,63 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
         }
     }
 
-    private void addVariableNodes(UaFolderNode rootNode) {
-        addStatic(rootNode);
-        addDynamic(rootNode);
-    }
+
+
+    private void addDevices(UaFolderNode rootNode) {
+        for (Device i : dataCollector.getDevices()) {
+            UaFolderNode scalarTypesFolder = new UaFolderNode(
+                    getNodeContext(),
+                    newNodeId("Devices/" + i.getID()),
+                    newQualifiedName("deviceID"),
+                    LocalizedText.english(i.getID())
+            );
+
+            getNodeManager().addNode(scalarTypesFolder);
+            rootNode.addOrganizes(scalarTypesFolder);
+            for (LogicalDevice logicalDevice : i.getLogicalDevices()){
+                UaFolderNode logicalDeviceFolder = new UaFolderNode(
+                        getNodeContext(),
+                        newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()),
+                        newQualifiedName("logicalDeviceID"),
+                        LocalizedText.english(logicalDevice.getKey())
+                );
+
+                getNodeManager().addNode(logicalDeviceFolder);
+                scalarTypesFolder.addOrganizes(logicalDeviceFolder);
+                for (Datapoint datapoint : logicalDevice.datapoints) {
+                    {
+                        String name = datapoint.dpkey;
+                        NodeId typeId = Identifiers.Int32;
+                        Variant variant = new Variant(0);
+
+                        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
+                                .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                .setAccessLevel(AccessLevel.READ_WRITE)
+                                .setBrowseName(newQualifiedName(name))
+                                .setDisplayName(LocalizedText.english(name))
+                                .setDataType(typeId)
+                                .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                .build();
+
+                        node.setValue(new DataValue(variant));
+
+                        node.getFilterChain().addLast(
+                                new AttributeLoggingFilter(),
+                                AttributeFilters.getValue(
+                                        ctx ->
+                                                new DataValue(new Variant(random.nextInt(100)))
+                                )
+                        );
+
+                        getNodeManager().addNode(node);
+                        logicalDeviceFolder.addOrganizes(node);
+                    }
+                }
+                }
+            }
+        }
+
+
 
     private void addStatic(UaFolderNode rootNode) {
         UaFolderNode scalarTypesFolder = new UaFolderNode(
