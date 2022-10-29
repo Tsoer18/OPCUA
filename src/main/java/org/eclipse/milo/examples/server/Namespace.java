@@ -40,6 +40,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,31 +198,90 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                 scalarTypesFolder.addOrganizes(logicalDeviceFolder);
                 for (Datapoint datapoint : logicalDevice.datapoints) {
                     {
-                        String name = datapoint.dpkey;
-                        NodeId typeId = Identifiers.Int32;
-                        Variant variant = new Variant(0);
 
-                        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                                .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
-                                .setAccessLevel(AccessLevel.READ_WRITE)
-                                .setBrowseName(newQualifiedName(name))
-                                .setDisplayName(LocalizedText.english(name))
-                                .setDataType(typeId)
-                                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                                .build();
+                        if (datapoint.access.equals("r")){
+                            String name = datapoint.dpkey;
+                            NodeId typeId = Identifiers.Int32;
+                            Variant variant = new Variant(0);
+                            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
+                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setBrowseName(newQualifiedName(name))
+                                    .setAccessLevel(AccessLevel.READ_ONLY)
+                                    .setDisplayName(LocalizedText.english(name))
+                                    .setDataType(typeId)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .build();
+                            node.setValue(new DataValue(variant));
 
-                        node.setValue(new DataValue(variant));
+                            node.getFilterChain().addLast(
+                                    new AttributeLoggingFilter(),
+                                    AttributeFilters.getValue(
+                                            ctx ->
+                                                    new DataValue(new Variant(random.nextInt(100)))
+                                    )
+                            );
 
-                        node.getFilterChain().addLast(
-                                new AttributeLoggingFilter(),
-                                AttributeFilters.getValue(
-                                        ctx ->
-                                                new DataValue(new Variant(random.nextInt(100)))
-                                )
-                        );
 
-                        getNodeManager().addNode(node);
-                        logicalDeviceFolder.addOrganizes(node);
+
+                            getNodeManager().addNode(node);
+                            logicalDeviceFolder.addOrganizes(node);
+                        }
+                        if (datapoint.access.equals("w")){
+                            String name = datapoint.dpkey;
+                            NodeId typeId = Identifiers.Int32;
+                            Variant variant = new Variant(0);
+                            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
+                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setBrowseName(newQualifiedName(name))
+                                    .setAccessLevel(AccessLevel.WRITE_ONLY)
+                                    .setDisplayName(LocalizedText.english(name))
+                                    .setDataType(typeId)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .build();
+                            node.setValue(new DataValue(variant));
+
+                            node.getFilterChain().addLast(
+                                    new AttributeLoggingFilter(),
+                                    AttributeFilters.getValue(
+                                            ctx ->
+                                                    new DataValue(new Variant(random.nextInt(100)))
+                                    )
+                            );
+
+
+
+                            getNodeManager().addNode(node);
+                            logicalDeviceFolder.addOrganizes(node);
+                        }
+                        if (datapoint.access.equals("rw")){
+                            String name = datapoint.dpkey;
+                            NodeId typeId = Identifiers.Int32;
+                            Variant variant = new Variant(0);
+                            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
+                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setBrowseName(newQualifiedName(name))
+                                    .setAccessLevel(AccessLevel.READ_WRITE)
+                                    .setDisplayName(LocalizedText.english(name))
+                                    .setDataType(typeId)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .build();
+                            node.setValue(new DataValue(variant));
+
+                            node.getFilterChain().addLast(
+                                    new AttributeLoggingFilter(),
+                                    AttributeFilters.getValue(
+                                            ctx ->
+                                                    new DataValue(new Variant(random.nextInt(100)))
+                                    )
+                            );
+
+
+
+                            getNodeManager().addNode(node);
+                            logicalDeviceFolder.addOrganizes(node);
+
+                        }
+
                     }
                 }
                 }
