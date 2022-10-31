@@ -55,6 +55,7 @@ public class DataCollector {
                     datapoint.setName((String) datapointAccessAndName.get(0));
                     datapoint.setAccess((String) datapointAccessAndName.get(1));
                     datapoint.setGeturl(datapointURL);
+                    datapoint.setType((String) datapointAccessAndName.get(3));
                     System.out.println("Datapoint with key: " + nodeMediumRare + " Has the name: " + datapoint.name + " and access level: " + datapoint.access);
 
                 }
@@ -108,18 +109,28 @@ public class DataCollector {
         ArrayList list = new ArrayList();
         Object object = parser.parse(response.toString());
         JSONObject jo = (JSONObject)object;
-            String x = (jo).get("name").toString();
-            String y = (jo).get("access").toString();
-            Object z = (jo).get("value");
-            Object k = (jo).get("type");
-            list.add(x);
-            list.add(y);
-            if (z != null) {
-                list.add(z.toString());
+            String name = (jo).get("name").toString();
+            String access = (jo).get("access").toString();
+            Object value = (jo).get("value");
+            String type = (String) (jo).get("type");
+        System.out.println();
+            list.add(name);
+            list.add(access);
+            if (value != null) {
+                if (type.equals("boolean") || type.equals( "integer") || type.equals("double")) {
+
+                    list.add(value);
+                }else {
+                    list.add(value.toString());
+                }
+                System.out.println("Value: " + value + " is of type: " + type);
+            }else{
+                list.add(2, 0);
             }
-            list.add(k.toString());
+            list.add(3, type.toString());
+
             Object l = (jo).get("key");
-            list.add(l.toString());
+            list.add(4, l.toString());
         return list;
 
         }
