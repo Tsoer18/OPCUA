@@ -32,9 +32,7 @@ public class DataCollector {
         StringBuffer response = sendGET(deviceURL);
         ArrayList ids = getId(response);
         for (Object i : ids){
-            if (i.toString().equals("8")){
-                break;
-            }
+
             Device device = new Device((String) i);
             System.out.println("Device Created with ID: "+ i.toString());
             URL logicalDeviceURL = new URL(GET_URL+ "/"+ i + "/ldev");
@@ -56,8 +54,8 @@ public class DataCollector {
                     ArrayList datapointAccessAndName = getDatapoints(datapointResponse);
                     datapoint.setName((String) datapointAccessAndName.get(0));
                     datapoint.setAccess((String) datapointAccessAndName.get(1));
+                    datapoint.setGeturl(datapointURL);
                     System.out.println("Datapoint with key: " + nodeMediumRare + " Has the name: " + datapoint.name + " and access level: " + datapoint.access);
-
 
                 }
 
@@ -112,8 +110,16 @@ public class DataCollector {
         JSONObject jo = (JSONObject)object;
             String x = (jo).get("name").toString();
             String y = (jo).get("access").toString();
+            Object z = (jo).get("value");
+            Object k = (jo).get("type");
             list.add(x);
             list.add(y);
+            if (z != null) {
+                list.add(z.toString());
+            }
+            list.add(k.toString());
+            Object l = (jo).get("key");
+            list.add(l.toString());
         return list;
 
         }
