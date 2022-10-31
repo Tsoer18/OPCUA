@@ -55,6 +55,7 @@ public class DataCollector {
                     datapoint.setName((String) datapointAccessAndName.get(0));
                     datapoint.setAccess((String) datapointAccessAndName.get(1));
                     datapoint.setGeturl(datapointURL);
+                    datapoint.setValue (datapointAccessAndName.get(2));
                     datapoint.setType((String) datapointAccessAndName.get(3));
                     System.out.println("Datapoint with key: " + nodeMediumRare + " Has the name: " + datapoint.name + " and access level: " + datapoint.access);
 
@@ -113,17 +114,11 @@ public class DataCollector {
             String access = (jo).get("access").toString();
             Object value = (jo).get("value");
             String type = (String) (jo).get("type");
-        System.out.println();
+
             list.add(name);
             list.add(access);
             if (value != null) {
-                if (type.equals("boolean") || type.equals( "integer") || type.equals("double")) {
-
                     list.add(value);
-                }else {
-                    list.add(value.toString());
-                }
-                System.out.println("Value: " + value + " is of type: " + type);
             }else{
                 list.add(2, 0);
             }

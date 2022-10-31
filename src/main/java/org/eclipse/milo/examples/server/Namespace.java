@@ -206,15 +206,16 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
                         if (datapoint.access.equals("r")){
                             String name = datapoint.dpkey;
-                            NodeId typeId =  new NodeId(2,"i");
+                            NodeId typeId =  Identifiers.Boolean;
                             Variant variant = new Variant(0);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
                                     .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
                                     .setBrowseName(newQualifiedName(name))
                                     .setUserAccessLevel(AccessLevel.READ_ONLY)
+                                    .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.Int32)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
                                     .build();
                             node.setValue(new DataValue(variant));
 
@@ -244,15 +245,16 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                         }
                         if (datapoint.access.equals("w")){
                             String name = datapoint.dpkey;
-                            NodeId typeId =  new NodeId(2,"i");
+                            NodeId typeId =  Identifiers.Boolean;
                             Variant variant = new Variant(0);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
                                     .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
                                     .setBrowseName(newQualifiedName(name))
                                     .setUserAccessLevel(AccessLevel.WRITE_ONLY)
+                                    .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.Int32)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
                                     .build();
                             node.setValue(new DataValue(variant));
 
@@ -281,18 +283,19 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                         }
                         if (datapoint.access.equals("rw")){
                             String name = datapoint.dpkey;
-                                NodeId typeId =  new NodeId(2,datapoint.type);
-                            Variant variant = new Variant(0);
+                            NodeId typeId =  Identifiers.Boolean;
+                            Variant variant = new Variant(datapoint.value);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
                                     .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
                                     .setBrowseName(newQualifiedName(name))
+                                    .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setUserAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.Int32)
+                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
                                     .build();
                             node.setValue(new DataValue(variant));
-
+/*
                             node.getFilterChain().addLast(
                                     new AttributeLoggingFilter(),
                                     AttributeFilters.getValue(
@@ -310,6 +313,8 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                                             }
                                     )
                             );
+                            */
+
 
 
 
@@ -361,13 +366,12 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
     private  Object getJsonNode(URL geturl) throws ParseException, IOException {
         StringBuffer datapointResponse = sendGET(geturl);
         ArrayList datapointAccessAndName = getDatapoints(datapointResponse);
-        System.out.println(datapointAccessAndName.get(3));
         if (datapointAccessAndName.get(3).equals("boolean")) {
-            return (Boolean) datapointAccessAndName.get(2);
+            return (boolean) datapointAccessAndName.get(2);
         }else if(datapointAccessAndName.get(3).equals("integer")){
-            return (Integer) datapointAccessAndName.get(2);
+            return (int) datapointAccessAndName.get(2);
         }else if (datapointAccessAndName.get(3).equals("double")){
-            return (Double) datapointAccessAndName.get(2);
+            return (double) datapointAccessAndName.get(2);
         }else {
             return (String) datapointAccessAndName.get(2);
         }

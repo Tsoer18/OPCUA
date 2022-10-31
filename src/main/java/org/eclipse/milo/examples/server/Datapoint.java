@@ -9,6 +9,7 @@ public class Datapoint {
 
     public URL geturl;
     public String type;
+    public Object value;
 
 
     public Datapoint (String dpkey){
@@ -28,6 +29,9 @@ public class Datapoint {
 
     public void setType (String type){
         this.type = type;
+    }
+    public void setValue (Object value){
+        this.value = value;
     }
 
 }

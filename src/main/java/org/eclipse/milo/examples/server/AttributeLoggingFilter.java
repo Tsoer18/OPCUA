@@ -56,6 +56,7 @@ public class AttributeLoggingFilter implements AttributeFilter {
                 "set nodeId={} attributeId={} value={}",
                 ctx.getNode().getNodeId(), attributeId, value
             );
+            System.out.println( "Sættede en attribut med ID: " + ctx.getNode().getNodeId() + value);
         }
 
         ctx.setAttribute(attributeId, value);
