@@ -11,6 +11,7 @@
 package org.eclipse.milo.examples.server;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.function.Predicate;
 
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilter;
@@ -64,9 +65,10 @@ public class AttributeLoggingFilter implements AttributeFilter {
         ctx.setAttribute(attributeId, value);
         try {
             DataCollector dataCollector = new DataCollector(1);
+
             dataCollector.sendPOST();
 
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }

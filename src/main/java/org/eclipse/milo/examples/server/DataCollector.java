@@ -25,7 +25,7 @@ public class DataCollector {
 
     private static final String POST_URL = "http://gw-6c9c.sandbox.tek.sdu.dk/ssapi/zb/dev/2/ldev/smartplug/data/onoff";
 
-    private static final String POST_PARAMS = "{\"value\":false}";
+    private static String POST_PARAMS = "{\"value\":false}";
     private String name;
 
     private ArrayList<Device> devices = new ArrayList();
@@ -112,6 +112,38 @@ public class DataCollector {
 
     }
 
+
+    public static boolean getActuatorStatus(URL obj) throws IOException, ParseException {
+
+        StringBuffer response = sendGET(obj);
+        String value = getActuatorData(response);
+
+        if (value.equals("true")){
+            return true;
+        }
+        if (value.equals("false")) {
+            return false;
+        }
+
+
+        return false;
+    }
+
+
+    public static String getActuatorData(StringBuffer response) throws  ParseException{
+        JSONParser parser = new JSONParser();
+
+        Object object = parser.parse(response.toString());
+        JSONObject jo = (JSONObject)object;
+        String value = (jo).get("value").toString();
+
+        return value;
+
+    }
+
+
+
+
     public static ArrayList getDatapoints(StringBuffer response) throws  ParseException{
         JSONParser parser = new JSONParser();
         ArrayList list = new ArrayList();
@@ -190,7 +222,13 @@ public class DataCollector {
         //System.out.println(list);
     }
 
-    public static void sendPOST() throws IOException {
+    public static void sendPOST() throws IOException, ParseException {
+        boolean b = getActuatorStatus(new URL("http://gw-6c9c.sandbox.tek.sdu.dk/ssapi/zb/dev/2/ldev/smartplug/data/onoff"));
+        if (b == true){
+            POST_PARAMS = "{\"value\":false}";
+        }else{
+            POST_PARAMS  = "{\"value\":true}";
+        }
         URL obj = new URL(POST_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("PUT");
