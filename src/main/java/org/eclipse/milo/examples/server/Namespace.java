@@ -295,7 +295,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                                     .setTypeDefinition(Identifiers.BaseDataVariableType)
                                     .build();
                             node.setValue(new DataValue(variant));
-/*
+
                             node.getFilterChain().addLast(
                                     new AttributeLoggingFilter(),
                                     AttributeFilters.getValue(
@@ -313,7 +313,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                                             }
                                     )
                             );
-                            */
+
 
 
 

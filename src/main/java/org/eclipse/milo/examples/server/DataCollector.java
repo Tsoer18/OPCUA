@@ -14,6 +14,8 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class DataCollector {
@@ -21,9 +23,9 @@ public class DataCollector {
 
     public static final String GET_URL = "http://gw-6c9c.sandbox.tek.sdu.dk/ssapi/zb/dev";
 
-    private static final String POST_URL = "https://localhost:9090/SpringMVCExample/home";
+    private static final String POST_URL = "http://gw-6c9c.sandbox.tek.sdu.dk/ssapi/zb/dev/2/ldev/smartplug/data/onoff";
 
-    private static final String POST_PARAMS = "userName=Pankaj";
+    private static final String POST_PARAMS = "{\"value\":false}";
     private String name;
 
     private ArrayList<Device> devices = new ArrayList();
@@ -66,6 +68,11 @@ public class DataCollector {
         }
 
     }
+
+    public DataCollector (int i){
+
+    }
+
     public static void main(String[] args) throws IOException, ParseException {
         DataCollector dataCollector = new DataCollector();
 
@@ -183,16 +190,15 @@ public class DataCollector {
         //System.out.println(list);
     }
 
-    private static void sendPOST() throws IOException {
+    public static void sendPOST() throws IOException {
         URL obj = new URL(POST_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestMethod("PUT");
 
         // For POST only - START
         con.setDoOutput(true);
         OutputStream os = con.getOutputStream();
-        os.write(POST_PARAMS.getBytes());
+        os.write(POST_PARAMS.getBytes(StandardCharsets.UTF_8));
         os.flush();
         os.close();
         // For POST only - END

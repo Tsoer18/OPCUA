@@ -10,12 +10,14 @@
 
 package org.eclipse.milo.examples.server;
 
+import java.io.IOException;
 import java.util.function.Predicate;
 
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilter;
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilterContext.GetAttributeContext;
 import org.eclipse.milo.opcua.sdk.server.nodes.filters.AttributeFilterContext.SetAttributeContext;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +58,17 @@ public class AttributeLoggingFilter implements AttributeFilter {
                 "set nodeId={} attributeId={} value={}",
                 ctx.getNode().getNodeId(), attributeId, value
             );
-            System.out.println( "Sættede en attribut med ID: " + ctx.getNode().getNodeId() + value);
+            System.out.println( "Sættede en attribut med value: " + value);
         }
 
         ctx.setAttribute(attributeId, value);
+        try {
+            DataCollector dataCollector = new DataCollector(1);
+            dataCollector.sendPOST();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
