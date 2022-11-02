@@ -107,20 +107,20 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
         NodeId folderNodeId = newNodeId("Devices");
 
         UaFolderNode folderNode = new UaFolderNode(
-            getNodeContext(),
-            folderNodeId,
-            newQualifiedName("Devices"),
-            LocalizedText.english("Devices")
+                getNodeContext(),
+                folderNodeId,
+                newQualifiedName("Devices"),
+                LocalizedText.english("Devices")
         );
 
         getNodeManager().addNode(folderNode);
 
         // Make sure our new folder shows up under the server's Objects folder.
         folderNode.addReference(new Reference(
-            folderNode.getNodeId(),
-            Identifiers.Organizes,
-            Identifiers.ObjectsFolder.expanded(),
-            false
+                folderNode.getNodeId(),
+                Identifiers.Organizes,
+                Identifiers.ObjectsFolder.expanded(),
+                false
         ));
 
         // Add the rest of the nodes
@@ -130,9 +130,9 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
     private void startBogusEventNotifier() {
         // Set the EventNotifier bit on Server Node for Events.
         UaNode serverNode = getServer()
-            .getAddressSpaceManager()
-            .getManagedNode(Identifiers.Server)
-            .orElse(null);
+                .getAddressSpaceManager()
+                .getManagedNode(Identifiers.Server)
+                .orElse(null);
 
         if (serverNode instanceof ServerTypeNode) {
             ((ServerTypeNode) serverNode).setEventNotifier(ubyte(1));
@@ -142,8 +142,8 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                 while (keepPostingEvents) {
                     try {
                         BaseEventTypeNode eventNode = getServer().getEventFactory().createEvent(
-                            newNodeId(UUID.randomUUID()),
-                            Identifiers.BaseEventType
+                                newNodeId(UUID.randomUUID()),
+                                Identifiers.BaseEventType
                         );
 
                         eventNode.setBrowseName(new QualifiedName(1, "foo"));
@@ -179,7 +179,6 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
     }
 
 
-
     private void addDevices(UaFolderNode rootNode) {
         for (Device i : dataCollector.getDevices()) {
             UaFolderNode scalarTypesFolder = new UaFolderNode(
@@ -191,10 +190,10 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
             getNodeManager().addNode(scalarTypesFolder);
             rootNode.addOrganizes(scalarTypesFolder);
-            for (LogicalDevice logicalDevice : i.getLogicalDevices()){
+            for (LogicalDevice logicalDevice : i.getLogicalDevices()) {
                 UaFolderNode logicalDeviceFolder = new UaFolderNode(
                         getNodeContext(),
-                        newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()),
+                        newNodeId("Devices/" + i.getID() + "/" + logicalDevice.getKey()),
                         newQualifiedName("logicalDeviceID"),
                         LocalizedText.english(logicalDevice.getKey())
                 );
@@ -203,20 +202,42 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                 scalarTypesFolder.addOrganizes(logicalDeviceFolder);
                 for (Datapoint datapoint : logicalDevice.datapoints) {
                     {
+                        System.out.println(datapoint.type);
+                        NodeId typeId;
+                        if (datapoint.type.equals("boolean")) {
+                            typeId = Identifiers.Boolean;
 
-                        if (datapoint.access.equals("r")){
+                        }else
+                        if (datapoint.type.equals("string")) {
+                            typeId = Identifiers.String;
+
+                        }else
+                        if (datapoint.type.equals("integer") || datapoint.type.equals("signed_integer")) {
+                            typeId = Identifiers.Int32;
+
+                        }else
+                        if (datapoint.type.equals("double")) {
+                            typeId = Identifiers.Double;
+
+                        }
+                        else {
+                            typeId = Identifiers.String;
+                            System.out.println("else");
+                        }
+                        if (datapoint.access.equals("r")) {
                             String name = datapoint.dpkey;
-                            NodeId typeId =  Identifiers.Boolean;
-                            Variant variant = new Variant(0);
+
+                            Variant variant = new Variant(datapoint.value);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setNodeId(newNodeId("Devices/" + i.getID() + "/" + logicalDevice.getKey() + "/" + name))
                                     .setBrowseName(newQualifiedName(name))
                                     .setUserAccessLevel(AccessLevel.READ_ONLY)
                                     .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .setTypeDefinition(typeId)
                                     .build();
+
                             node.setValue(new DataValue(variant));
 
                             node.getFilterChain().addLast(
@@ -239,23 +260,23 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                             );
 
 
-
                             getNodeManager().addNode(node);
                             logicalDeviceFolder.addOrganizes(node);
                         }
-                        if (datapoint.access.equals("w")){
+                        if (datapoint.access.equals("w")) {
                             String name = datapoint.dpkey;
-                            NodeId typeId =  Identifiers.Boolean;
-                            Variant variant = new Variant(0);
+
+                            Variant variant = new Variant(datapoint.value);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setNodeId(newNodeId("Devices/" + i.getID() + "/" + logicalDevice.getKey() + "/" + name))
                                     .setBrowseName(newQualifiedName(name))
                                     .setUserAccessLevel(AccessLevel.WRITE_ONLY)
                                     .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .setTypeDefinition(typeId)
                                     .build();
+
                             node.setValue(new DataValue(variant));
 
                             node.getFilterChain().addLast(
@@ -275,24 +296,24 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                                             }
                                     )
                             );
-
 
 
                             getNodeManager().addNode(node);
                             logicalDeviceFolder.addOrganizes(node);
                         }
-                        if (datapoint.access.equals("rw")){
+                        if (datapoint.access.equals("rw")) {
+
                             String name = datapoint.dpkey;
-                            NodeId typeId =  Identifiers.Boolean;
+
                             Variant variant = new Variant(datapoint.value);
                             UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                                    .setNodeId(newNodeId("Devices/" + i.getID()+ "/"+ logicalDevice.getKey()+ "/" + name))
+                                    .setNodeId(newNodeId("Devices/" + i.getID() + "/" + logicalDevice.getKey() + "/" + name))
                                     .setBrowseName(newQualifiedName(name))
                                     .setAccessLevel(AccessLevel.READ_WRITE)
                                     .setUserAccessLevel(AccessLevel.READ_WRITE)
                                     .setDisplayName(LocalizedText.english(name))
                                     .setDataType(typeId)
-                                    .setTypeDefinition(Identifiers.BaseDataVariableType)
+                                    .setTypeDefinition(typeId)
                                     .build();
                             node.setValue(new DataValue(variant));
 
@@ -313,9 +334,6 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
                                             }
                                     )
                             );
-
-
-
 
 
                             getNodeManager().addNode(node);
@@ -325,44 +343,29 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
                     }
                 }
-                }
             }
+        }
+    }
+
+    public Object casterMethod(Datapoint datapoint) {
+
+        if (datapoint.type.equals("boolean")) {
+            return (boolean) datapoint.value;
+        }
+        if (datapoint.type.equals("string")) {
+            return (String) datapoint.value;
+        }
+        if (datapoint.type.equals("integer") ) {
+            return (int) datapoint.value;
+        }
+        if (datapoint.type.equals("double")) {
+            return (double) datapoint.value;
         }
 
 
-
-    private void addStatic(UaFolderNode rootNode) {
-        UaFolderNode scalarTypesFolder = new UaFolderNode(
-            getNodeContext(),
-            newNodeId("ICPS/Static"),
-            newQualifiedName("Static"),
-            LocalizedText.english("Static")
-        );
-
-        getNodeManager().addNode(scalarTypesFolder);
-        rootNode.addOrganizes(scalarTypesFolder);
-
-        String name = "Int32";
-        NodeId typeId = Identifiers.Int32;
-        Variant variant = new Variant(uint(32));
-
-        UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                .setNodeId(newNodeId("ICPS/Static/" + name))
-                .setAccessLevel(AccessLevel.READ_WRITE)
-                .setUserAccessLevel(AccessLevel.READ_WRITE)
-                .setBrowseName(newQualifiedName(name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-        node.setValue(new DataValue(variant));
-
-        node.getFilterChain().addLast(new AttributeLoggingFilter(AttributeId.Value::equals));
-
-        getNodeManager().addNode(node);
-        scalarTypesFolder.addOrganizes(node);
+        return (String) datapoint.value;
     }
+
     private  Object getJsonNode(URL geturl) throws ParseException, IOException {
         StringBuffer datapointResponse = sendGET(geturl);
         ArrayList datapointAccessAndName = getDatapoints(datapointResponse);
@@ -379,46 +382,7 @@ public class Namespace extends ManagedNamespaceWithLifecycle {
 
     }
 
-    private void addDynamic(UaFolderNode rootNode) {
-        UaFolderNode dynamicFolder = new UaFolderNode(
-            getNodeContext(),
-            newNodeId("ICPS/Dynamic"),
-            newQualifiedName("Dynamic"),
-            LocalizedText.english("Dynamic")
-        );
 
-        getNodeManager().addNode(dynamicFolder);
-        rootNode.addOrganizes(dynamicFolder);
-
-        // Dynamic Int32
-        {
-            String name = "Int32";
-            NodeId typeId = Identifiers.Int32;
-            Variant variant = new Variant(0);
-
-            UaVariableNode node = new UaVariableNode.UaVariableNodeBuilder(getNodeContext())
-                .setNodeId(newNodeId("ICPS/Dynamic/" + name))
-                .setAccessLevel(AccessLevel.READ_WRITE)
-                .setBrowseName(newQualifiedName(name))
-                .setDisplayName(LocalizedText.english(name))
-                .setDataType(typeId)
-                .setTypeDefinition(Identifiers.BaseDataVariableType)
-                .build();
-
-            node.setValue(new DataValue(variant));
-
-            node.getFilterChain().addLast(
-                new AttributeLoggingFilter(),
-                AttributeFilters.getValue(
-                    ctx ->
-                        new DataValue(new Variant(random.nextInt(100)))
-                )
-            );
-
-            getNodeManager().addNode(node);
-            dynamicFolder.addOrganizes(node);
-        }
-    }
 
     @Override
     public void onDataItemsCreated(List<DataItem> dataItems) {

@@ -64,8 +64,8 @@ public class AttributeLoggingFilter implements AttributeFilter {
 
         ctx.setAttribute(attributeId, value);
         try {
-            DataCollector dataCollector = new DataCollector(1);
 
+            DataCollector dataCollector = new DataCollector(1);
             dataCollector.sendPOST();
 
         } catch (IOException | ParseException e) {

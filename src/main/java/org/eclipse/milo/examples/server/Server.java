@@ -54,7 +54,6 @@ public class Server {
 
     public static void main(String[] args) throws Exception {
         Server server = new Server();
-
         server.startup().get();
 
         while(true) {
